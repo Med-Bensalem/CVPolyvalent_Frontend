@@ -36,3 +36,29 @@
     transform: rotate(360deg);
   }
 }
+
+.cardStyle{
+  margin-top: -33px;
+}
+
+.blue-text{
+  color: blue;
+}
+
+.vert-text{
+  color: #ff5a5f;
+}
+.title {
+  /* Your styles here */
+  font-weight: bold;
+  color: blue;
+}
+
+
+.red-asterisk {
+  color: red;
+}
+
+.unread-contact {
+  background-color: #e3dbff;
+}

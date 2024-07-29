@@ -1,0 +1,134 @@
+import React, {useEffect, useState} from 'react';
+import './ModelCV.css'
+import {jwtDecode} from "jwt-decode";
+import {getExperiencesByUser} from "../Services/experienceService";
+import {getFormationsByUser} from "../Services/formationService";
+import {getCompetencesByUser} from "../Services/competenceService";
+import {getCertificatesByUser} from "../Services/certificationService";
+import {getLanguagesByUser} from "../Services/langueService";
+import {getInterestsByUser} from "../Services/interetService";
+import {getUserById} from "../Services/authService";
+const baseURL = 'http://localhost:5000';
+
+const ModelCV2 = () => {
+    const [experiences, setExperiences] = useState([]);
+    const [formations, setFormations] = useState([]);
+    const [competences, setCompetences] = useState([]);
+    const [certificates, setCertificates] = useState([]);
+    const [languages, setLanguages] = useState([]);
+    const [interests, setInterests] = useState([]);
+    const [user, setUser] = useState({});
+    const formatDateRange = (startDateString, endDateString) => {
+        const startDate = new Date(startDateString);
+
+        // Formater les dates en "Mois Année"
+        const formattedStartDate = startDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+
+        return `${formattedStartDate}`;
+    };
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const token = localStorage.getItem("token");
+            if (token) {
+                const user = jwtDecode(token);
+                try {
+                    const fetchedExperiences = await getExperiencesByUser(user.userId);
+                    setExperiences(fetchedExperiences);
+                    const fetchedLangues = await getLanguagesByUser(user.userId);
+                    setLanguages(fetchedLangues);
+                    const fetchedInteret = await getInterestsByUser(user.userId);
+                    setInterests(fetchedInteret);
+                    const fetchedFormations = await getFormationsByUser(user.userId);
+                    setFormations(fetchedFormations);
+                    const fetchedCompetences = await getCompetencesByUser(user.userId);
+                    setCompetences(fetchedCompetences);
+                    const fetchedCertificates = await getCertificatesByUser(user.userId);
+                    setCertificates(fetchedCertificates);
+                    const userResponse = await getUserById(user.userId);
+                    setUser(userResponse)
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            }
+        };
+        fetchUserData();
+    }, []);
+    const imagePath =  baseURL + user.image ;
+    return (
+        <div className="containermodelcv1">
+            <header className="headermodelcv1">
+                <img src={imagePath} alt="Votre Nom" className="profile-img"/>
+                <h1 >{user.nom} {user.prenom}</h1>
+                <p>{user.poste}</p>
+            </header>
+            <div className="section">
+                <h2 className="section-title">Coordonnées</h2>
+                <div className="section-content">
+                    <p><i className="fas fa-map-marker-alt mx-2 blue-text"></i>{user.adress}</p>
+                    <p><i className="fas fa-envelope mx-2 blue-text"></i>{user.email}</p>
+                    <p><i className="fas fa-phone mx-2 blue-text"></i>{user.phone}</p>
+                </div>
+            </div>
+
+            <div className="section">
+                <h2 className="section-title">Expérience Professionnelle</h2>
+                {experiences.map((experience, index) => (
+                    <div className="section-content" key={experience._id}>
+                        <h4>{experience.titre}</h4>
+                        <p>
+                            <span className="blue-text">{formatDateRange(experience.dateDebut)} - {experience.disponibilite ? ' Présent' : formatDateRange(experience.dateFin)}</span> {experience.nomEntreprise}
+                        </p>
+                        <p style={{ marginLeft: '20px' }}  dangerouslySetInnerHTML={{__html: experience.description}}/>
+                    </div>
+                ))}
+            </div>
+
+            <div className="section">
+                <h2 className="section-title">Éducation</h2>
+                {formations.map((formation, index) => (
+                    <div className="section-content" key={formation._id}>
+                        <h4>{formation.diplome}</h4>
+                        <p>
+                            <span
+                                className="blue-text">{formatDateRange(formation.dateDebut)} -  {formation.enCours ? ' Présent' : formatDateRange(formation.dateFin)}</span>, {formation.etablissement}
+                        </p>
+                    </div>
+                ))}
+            </div>
+
+            <div className="section skills">
+                <h2 className="section-title">Compétences</h2>
+
+                <ul>
+                    {competences.map((competence, index) => (
+                        <li key={competence._id}>{competence.nom}</li>
+                    ))}
+                </ul>
+
+            </div>
+            <div className="section skills">
+                <h2 className="section-title">Langues</h2>
+                <ul>
+                    {languages.map((langue, index) => (
+                        <li key={langue._id}>{langue.nom}</li>
+                    ))}
+
+                </ul>
+            </div>
+            <div className="section skills">
+                <h2 className="section-title">Intérêts</h2>
+                <ul>
+                    {interests.map((interet, index) => (
+                        <li key={interet._id}>{interet.nom}</li>
+                    ))}
+
+                </ul>
+            </div>
+
+
+        </div>
+    );
+};
+
+export default ModelCV2;

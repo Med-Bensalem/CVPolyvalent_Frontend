@@ -1,0 +1,277 @@
+import React, { useEffect, useState } from 'react';
+import { Modal, Button } from 'react-bootstrap';
+import Sidebar from '../layouts/Sidebar';
+import Header from '../layouts/Header';
+import {useNavigate, useParams} from 'react-router-dom';
+import {getPostulesByOffer, updatePostuleState} from '../Services/postuleService';
+import { getUserById } from '../Services/authService';
+import {getOffreById} from "../Services/offreService";
+import ReactPaginate from "react-paginate";
+
+const baseURL = 'http://localhost:5000/';
+const itemsPerPage = 5;
+
+const SuivieEntreprise = () => {
+    const { id } = useParams();
+    const [offres, setOffres] = useState([]);
+    const [offre, setOffre] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [currentCV, setCurrentCV] = useState('');
+    const [currentLettre, setCurrentLettre] = useState('');
+    const [showLettreModal, setShowLettreModal] = useState(false);
+    const [currentItems, setCurrentItems] = useState([]);
+    const [pageCount, setPageCount] = useState(0);
+    const [itemOffset, setItemOffset] = useState(0);
+    const navigate = useNavigate();
+
+
+    const fetchOffres = async () => {
+        try {
+            const fetchedPostules = await getPostulesByOffer(id);
+            const offre = await getOffreById(id);
+            setOffre(offre);
+            const offresDetails = await Promise.all(
+                fetchedPostules.map(async (postule) => {
+                    const offreUserDetails = await getUserById(postule.userId);
+                    const cvUrl = baseURL + postule.cv.replace(/\\/g, '/');
+                    const lettre = baseURL + postule.lettreMotivation.replace(/\\/g, '/');
+                    return { ...postule, offreUserDetails ,cvUrl,lettre };
+                })
+            );
+            setOffres(offresDetails);
+
+        } catch (error) {
+            console.error('Error fetching experiences:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchOffres();
+    }, [id]);
+
+    const handleShowLettreModal = (lettre) => {
+        setCurrentLettre(lettre);
+        setShowLettreModal(true);
+    };
+
+    const handleCloseLettreModal = () => {
+        setShowLettreModal(false);
+        setCurrentLettre('');
+    };
+
+
+    const handleShowModal = (cv) => {
+        setCurrentCV(cv);
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setCurrentCV('');
+    };
+
+    useEffect(() => {
+        const endOffset = itemOffset + itemsPerPage;
+        setCurrentItems(offres.slice(itemOffset, endOffset));
+        setPageCount(Math.ceil(offres.length / itemsPerPage));
+    }, [itemOffset, offres]);
+
+    const handlePageClick = (event) => {
+        const newOffset = (event.selected * itemsPerPage) % offres.length;
+        setItemOffset(newOffset);
+    };
+
+    const handleClick = (id) => {
+        navigate(`/about/${id}`);
+    };
+
+    const accepterPostule = async (postId) => {
+        try {
+            await updatePostuleState(postId);
+            // Mettre à jour l'état ou effectuer d'autres actions après avoir accepté le postule
+        } catch (error) {
+            console.error('Erreur lors de l\'acceptation du postule:', error);
+        }
+    };
+
+    return (
+        <div id="db-wrapper">
+            <Sidebar />
+            <main id="page-content">
+                <div className="header">
+                    <Header />
+                </div>
+                <section className="container-fluid p-4">
+                    <div className="row">
+                        <div className="col-lg-12 col-md-12 col-12">
+                            <div className="border-bottom pb-3 mb-3 d-md-flex align-items-center justify-content-between">
+                                <div className="mb-3 mb-md-0">
+                                    <h1 className="mb-1 h2 fw-bold">Suivie Candidature </h1>
+                                    <nav aria-label="breadcrumb">
+                                        <ol className="breadcrumb">
+                                            <li className="breadcrumb-item">
+                                                <a href="admin-dashboard.html">Dashboard</a>
+                                            </li>
+                                            <li className="breadcrumb-item">
+                                                <a href="#">Suivie candidature</a>
+                                            </li>
+                                            <li className="breadcrumb-item active" aria-current="page">Toute Candidature</li>
+                                        </ol>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {currentItems.length === 0 ? (
+                        <div className="col-12 mb-2">
+                            <div className="alert alert-info alert-dismissible fade show" role="alert">
+                                Désolé, aucune candidature disponible pour le moment. Revenez bientôt !
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                    <div className="row">
+                        <div className="col-12">
+                            <div className="card">
+                                <div className="card-header">
+                                    <h4 className="mb-0">Candidature pour le poste {offre.titre} </h4>
+                                </div>
+                                <div className="table-responsive overflow-y-hidden">
+                                    <table className="table mb-0 text-nowrap table-hover table-centered">
+                                        <thead className="table-light">
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>cv</th>
+                                            <th>Lettre de motivation</th>
+                                            <th>Portfolio</th>
+                                            <th>Etat</th>
+                                            <th>Options</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {currentItems.map((postule) => {
+
+                                            return (
+                                                <tr key={postule.userId}>
+                                                    <td>
+                                                        <div className="d-flex align-items-center">
+                                                            <div className="ms-3">
+                                                                <h5 className="mb-0">
+                                                                    <a href="#" className="text-inherit">
+                                                                        {postule.offreUserDetails.nom} {postule.offreUserDetails.prenom}
+                                                                    </a>
+                                                                </h5>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <a href="#" onClick={() => handleShowModal(postule.cvUrl)}>
+                                                            <i className="bi bi-eye"></i> {/* Assuming you're using Bootstrap Icons */}
+                                                        </a>
+                                                    </td>
+
+
+                                                    <td>
+                                                        <a href="#"
+                                                           onClick={() => handleShowLettreModal(postule.lettre)}>
+                                                            <i className="bi bi-eye"
+                                                               style={{marginLeft: '60px'}}></i> {/* Assuming you're using Bootstrap Icons */}
+                                                        </a>
+                                                    </td>
+
+                                                    <td><a onClick={() => handleClick(postule.offreUserDetails._id)}
+                                                           className="text-body text-primary-hover ms-3 texttooltip">
+                                                        <i className="fe fe-link fs-5"></i>
+                                                    </a></td>
+
+
+                                                    <td> {postule.etat ? (
+                                                        <span className="badge bg-success">Accepté</span>
+                                                    ) : (
+                                                        <span className="badge bg-info-soft">En cours</span>
+                                                    )}</td>
+                                                    <td>
+                                                        <div className="dropdown dropstart">
+                                                            <a
+                                                                className="btn-icon btn btn-ghost btn-sm rounded-circle"
+                                                                href="#"
+                                                                role="button"
+                                                                id="Dropdown1"
+                                                                data-bs-toggle="dropdown"
+                                                                aria-haspopup="true"
+                                                                aria-expanded="false">
+                                                                <i className="fe fe-more-vertical"></i>
+                                                            </a>
+                                                            <div className="dropdown-menu" aria-labelledby="Dropdown1">
+                                                                <span className="dropdown-header">PARAMÈTRES</span>
+                                                                <a className="dropdown-item"
+                                                                   onClick={() => accepterPostule(postule._id)}>
+                                                                    <i className="fe fe-edit dropdown-item-icon"></i>
+                                                                    Accepter
+                                                                </a>
+
+
+
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+
+                            </div>
+                        </div>
+                        <ReactPaginate
+                            breakLabel="..."
+                            nextLabel="suivant >"
+                            onPageChange={handlePageClick}
+                            pageRangeDisplayed={5}
+                            pageCount={pageCount}
+                            previousLabel="< précédent"
+                            renderOnZeroPageCount={null}
+                            containerClassName="pagination"
+                            activeClassName="active"
+
+                        />
+                    </div>
+                </>
+                )}
+                </section>
+            </main>
+            <Modal show={showModal} onHide={handleCloseModal} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>CV</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <iframe src={currentCV} width="100%" height="500px" title="CV"></iframe>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCloseModal}>
+                        Fermer
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={showLettreModal} onHide={handleCloseLettreModal} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Lettre de Motivation</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <iframe src={currentLettre} width="100%" height="500px" title="Lettre de Motivation"></iframe>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCloseLettreModal}>
+                        Fermer
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+        </div>
+    );
+};
+
+export default SuivieEntreprise;

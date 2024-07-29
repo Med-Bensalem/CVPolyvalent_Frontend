@@ -1,43 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Required meta tags -->
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <meta name="author" content="Codescandy" />
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    <!-- Favicon icon-->
+    <link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon/favicon.ico" />
+    <!-- Add this line to the head of your HTML file -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" />
+
+
+
+    <!-- Libs CSS -->
+    <link href="assets/fonts/feather/feather.css" rel="stylesheet" />
+    <link href="assets/libs/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <link href="assets/libs/simplebar/dist/simplebar.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/libs/quill/dist/quill.snow.css">
+    <link rel="stylesheet" href="assets/libs/glightbox/dist/css/glightbox.min.css">
+    <link rel="stylesheet" href="assets/libs/bs-stepper/dist/css/bs-stepper.min.css">
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="assets/css/theme.min.css" />
+
+    <link rel="canonical" href="index.html" />
+    <link href="assets/libs/tiny-slider/dist/tiny-slider.css" rel="stylesheet" />
+    <link href="assets/libs/dragula/dist/dragula.min.css" rel="stylesheet ">
+    <title>Geeks </title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+    <script src="assets/libs/%40popperjs/core/dist/umd/popper.min.js"></script>
+    <script src="assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="assets/libs/simplebar/dist/simplebar.min.js"></script>
+    <script src="assets/libs/nouislider/dist/nouislider.min.js"></script>
+    <script src="assets/libs/wnumb/wNumb.min.js"></script>
+    <!-- Theme JS -->
+    <script src="assets/js/theme.min.js"></script>
+
+    <script src="assets/libs/tiny-slider/dist/min/tiny-slider.js"></script>
+
+    <script src="assets/libs/tippy.js/dist/tippy-bundle.umd.min.js"></script>
+    <script src="assets/js/vendors/tnsSlider.js"></script>
+    <script src="assets/js/vendors/tooltip.js"></script>
+    <script src="assets/js/vendors/validation.js"></script>
+    <script src="assets/libs/quill/dist/quill.min.js"></script>
+    <script src="assets/libs/dragula/dist/dragula.min.js"></script>
+    <script src="assets/libs/%40popperjs/core/dist/umd/popper.min.js"></script>
+
+    <script src="assets/libs/bs-stepper/dist/js/bs-stepper.min.js"></script>
+    <script src="assets/js/vendors/beStepper.js"></script>
+
+    <script src="assets/js/vendors/customDragula.js"></script>
+    <script src="assets/js/vendors/editor.js"></script>
+    <script src="assets/libs/%40yaireo/tagify/dist/tagify.min.js"></script>
+
+    <script src="assets/libs/glightbox/dist/js/glightbox.min.js"></script>
+    <script src="assets/js/vendors/glight.js"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const scrollToBottomButton = document.querySelector('.btn-scroll-top');
+        let isMouseDown = false;
+
+        if (scrollToBottomButton) {
+          scrollToBottomButton.addEventListener('mousedown', function(event) {
+            event.preventDefault(); // Empêcher la sélection du contenu lors du glissement
+            isMouseDown = true;
+          });
+
+          document.addEventListener('mousemove', function(event) {
+            if (isMouseDown) {
+              window.scrollBy(0, 10); // Défilement vers le bas par incréments de 10 pixels
+            }
+          });
+
+          document.addEventListener('mouseup', function() {
+            isMouseDown = false;
+          });
+        }
+      });
+
+
+
+    </script>
   </body>
 </html>
