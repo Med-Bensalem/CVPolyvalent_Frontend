@@ -129,7 +129,6 @@ const ListContacts = () => {
                                                             <div className="dropdown dropstart">
                                                                 <a
                                                                     className="btn-icon btn btn-ghost btn-sm rounded-circle"
-                                                                    href="#"
                                                                     role="button"
                                                                     id={`Dropdown${contact._id}`}
                                                                     data-bs-toggle="dropdown"

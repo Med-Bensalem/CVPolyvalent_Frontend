@@ -9,6 +9,10 @@ import {getUserById} from "../Services/authService";
 import moment from "moment/moment";
 import ReactPaginate from "react-paginate";
 import {getTypeExperienceById} from "../Services/typeExperienceService";
+import {Button, Modal} from "react-bootstrap";
+import {getWorkflowByOffreId} from "../Services/workflowService";
+import {getStepsByWorkflowId} from "../Services/stepService";
+import StepCard from "./StepCard";
 
 const baseURL = 'http://localhost:5000';
 const itemsPerPage = 5;
@@ -18,6 +22,12 @@ const SuivieCandidat = () => {
     const [currentItems, setCurrentItems] = useState([]);
     const [pageCount, setPageCount] = useState(0);
     const [itemOffset, setItemOffset] = useState(0);
+    const [showModal, setShowModal] = useState(false);
+    const [steps, setSteps] = useState([]);
+    const [currentStep, setCurrentStep] = useState(null); // Étape actuelle
+
+    const handleShow = () => setShowModal(true);
+    const handleClose = () => setShowModal(false);
 
     const fetchPostules = async () => {
         // Implement fetching competences by user
@@ -26,10 +36,19 @@ const SuivieCandidat = () => {
             const user = jwtDecode(token);
             try {
                 const fetchedPostules = await getPostulesByUser(user.userId);
+                console.log(fetchedPostules);
 
                 const offresDetails = await Promise.all(
                     fetchedPostules.map(async (postule) => {
                         const offreDetails = await getOffreById(postule.offreId);
+                        const workflow = await getWorkflowByOffreId(postule.offreId);
+                        if (workflow && workflow._id) {
+                            const stepps = await getStepsByWorkflowId(workflow._id);
+                            setSteps(stepps);
+                            // Sélectionner le step actuel basé sur le step_order
+                            const currentStep = stepps.find(step => step.step_order === postule.status);
+                            setCurrentStep(currentStep); // Mettre à jour l'étape actuelle
+                        }
                         const typeExperience = await getTypeExperienceById(offreDetails.experience)
                         const offreUserDetails = await getUserById(offreDetails.userId);
                         const imagePath = baseURL + offreUserDetails.image
@@ -141,15 +160,10 @@ const SuivieCandidat = () => {
                                                                     </div>
                                                                     <div>
 
-                                                                        {postule.offreDetails && new Date(postule.offreDetails.dateExpiration) < new Date() ? (
-                                                                            <span className="badge bg-danger ms-2">Expiré</span>
-                                                                        ) : (
-                                                                            postule.etat ? (
-                                                                                <span className="badge bg-success">Accepté</span>
-                                                                            ) : (
-                                                                                <span className="badge bg-warning ms-2">En Attente</span>
-                                                                            )
-                                                                        )}
+
+                                                                        <Button variant="primary" onClick={handleShow}>
+                                                                            Détails
+                                                                        </Button>
 
 
                                                                     </div>
@@ -215,6 +229,56 @@ const SuivieCandidat = () => {
                         </>
                     )}
                 </section>
+                <Modal show={showModal} onHide={handleClose} size="lg">
+                    <Modal.Header closeButton>
+                        <Modal.Title>Détails</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+
+                        <div className="row">
+
+                            {/* Card on the left with list */}
+                            <div className="col-md-5 mb-2">
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h5 className="card-title">Activity Timeline</h5>
+                                        <ul className="list-group list-group-flush list-timeline-activity">
+
+                                            {steps.map((step, index) => (
+                                                <li className="list-group-item px-0 pt-0 border-0 mb-4" key={index}>
+                                                    <div className="row">
+                                                        <div
+                                                            className={`col-auto ${currentStep && currentStep.step_order === step.step_order ? 'current-step' : ''}`}>
+                                                            <div
+                                                                className={`icon-shape icon-md rounded-circle ${currentStep && currentStep.step_order === step.step_order ? 'bg-primary text-white' : 'bg-light-primary text-primary'} position-relative z-1`}>
+                                                                <i>{index + 1}</i> {/* Affiche l'index + 1 pour un affichage humain */}
+                                                            </div>
+                                                        </div>
+                                                        <div className="col ms-n2 mt-1">
+                                                            <h4 className="mb-3">{step.titre}</h4>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            ))}
+
+
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-md-7 mb-2">
+                                <StepCard currentStep={currentStep}/>
+                            </div>
+
+                        </div>
+
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose}>
+                        Fermer
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </main>
         </div>
     );

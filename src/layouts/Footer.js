@@ -25,11 +25,11 @@ const FooterPage = () => {
 
                                 <h3 className="fw-bold mb-3">Company</h3>
                                 <ul className="list-unstyled nav nav-footer flex-column nav-x-0">
-                                    <li><a href="#" className="nav-link">About</a></li>
-                                    <li><a href="#" className="nav-link">Pricing</a></li>
-                                    <li><a href="#" className="nav-link">Blog</a></li>
-                                    <li><a href="#" className="nav-link">Careers</a></li>
-                                    <li><a href="#" className="nav-link">Contact</a></li>
+                                    <li><a className="nav-link">About</a></li>
+                                    <li><a  className="nav-link">Pricing</a></li>
+                                    <li><a  className="nav-link">Blog</a></li>
+                                    <li><a  className="nav-link">Careers</a></li>
+                                    <li><a  className="nav-link">Contact</a></li>
                                 </ul>
                             </div>
                         </div>

@@ -95,6 +95,26 @@ const Sidebar = () => {
                                 </a>
 
                             </li>
+                            <li className="nav-item">
+                                <a
+                                    className="nav-link "
+                                    href="/processus"
+                                >
+                                    <i className="nav-icon fe fe-layout me-2"></i>
+                                    Gestion Processus
+                                </a>
+
+                            </li>
+                            <li className="nav-item">
+                                <a
+                                    className="nav-link "
+                                    href="/domaines"
+                                >
+                                    <i className="nav-icon fe fe-layout me-2"></i>
+                                    Gestion Domaine
+                                </a>
+
+                            </li>
                         </>
                     )}
 
@@ -141,7 +161,7 @@ const Sidebar = () => {
                     {userRole === 'entreprise' && (
                         <>
                             <li className="nav-item">
-                            <a
+                                <a
                                     className="nav-link "
                                     href="/profile"
                                 >
@@ -154,6 +174,12 @@ const Sidebar = () => {
                                 <a className="nav-link" href="/offres">
                                     <i className="nav-icon fe fe-home me-2"></i>
                                     Gestion Offres
+                                </a>
+                            </li>
+                            <li className="nav-item">
+                                <a className="nav-link" href="/tests">
+                                    <i className="nav-icon fe fe-folder me-2"></i>
+                                    Gestion Tests
                                 </a>
                             </li>
 

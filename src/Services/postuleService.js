@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api/postules'; // Mettez l'URL de votre API
 
-const createPostule = async (cvFile, lettreMotivationFile, userId, offreId, description,dateCreation) => {
+const createPostule = async (cvFile, lettreMotivationFile, userId, offreId, description,dateCreation,score) => {
     try {
         const formData = new FormData();
         formData.append('cv', cvFile);
@@ -11,6 +11,7 @@ const createPostule = async (cvFile, lettreMotivationFile, userId, offreId, desc
         formData.append('offreId', offreId);
         formData.append('description', description);
         formData.append('dateCreation', dateCreation);
+        formData.append('score', score);
 
         const response = await axios.post(`${API_URL}/postule`, formData, {
             headers: {
@@ -44,14 +45,33 @@ const getPostulesByOffer = async (offreId) => {
     }
 };
 
-const updatePostuleState = async (postId) => {
+
+
+
+const updatePostuleStatus = async (postuleId, status) => {
     try {
-        const response = await axios.put(`${API_URL}/postules/${postId}/changer-etat`);
+        const response = await axios.put(`${API_URL}/postule/update-status`, {
+            postuleId,
+            status
+        });
         return response.data;
     } catch (error) {
         console.error(error);
-        throw new Error('Error updating postule state');
+        throw new Error('Erreur lors de la mise à jour du statut de la candidature');
     }
 };
 
-export {createPostule,getPostulesByUser,getPostulesByOffer,updatePostuleState} ;
+const sendStatusChangeEmails = async (postuleIds) => {
+    try {
+        const response = await axios.post(`${API_URL}/postule/send-emails`, {
+            postuleIds
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw new Error('Erreur lors de l\'envoi des emails de notification');
+    }
+};
+
+
+export {createPostule,getPostulesByUser,getPostulesByOffer,updatePostuleStatus,sendStatusChangeEmails} ;

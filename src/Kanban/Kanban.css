@@ -1,0 +1,51 @@
+/* Style de base pour le tableau Kanban */
+.kanban-board {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.kanban-column {
+    width: 300px; /* Ajuste la largeur des colonnes ici */
+    padding: 16px;
+    border-radius: 8px;
+    max-height: 500px;
+    overflow-y: auto; /* Permet le défilement si plus de 5 tâches */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #e2e8f0;
+}
+
+.kanban-tasks {
+    max-height: 300px; /* Limite la hauteur des tâches affichées */
+    overflow-y: auto;
+    border-radius: 8px;
+}
+
+.kanban-task {
+    background-color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 20px;
+    cursor: grab;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.kanban-task:hover {
+    background-color: #f4f4f4;
+}
+
+.kanban-more {
+    padding: 10px;
+    text-align: center;
+    color: #555;
+}
+
+/* Optionnel : tu peux ajuster le style de la barre de défilement */
+.kanban-tasks::-webkit-scrollbar {
+    width: 8px; /* Largeur de la barre de défilement */
+}
+
+.kanban-tasks::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3); /* Couleur de la barre */
+    border-radius: 4px;
+}

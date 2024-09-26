@@ -183,7 +183,7 @@ const ListSecteurs = () => {
                                     </nav>
                                 </div>
                                 <div>
-                                    <a href="#" className="btn btn-primary me-2" data-bs-toggle="modal"
+                                    <a  className="btn btn-primary me-2" data-bs-toggle="modal"
                                        data-bs-target="#AddSecteur">Ajouter Secteur</a>
                                 </div>
 

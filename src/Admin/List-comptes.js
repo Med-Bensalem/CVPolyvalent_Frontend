@@ -246,7 +246,7 @@ const ListComptes = () => {
                                                             </td>
 
                                                             <td>
-                                                                <a href="" onClick={() => rejectUser(user._id)}
+                                                                <a  onClick={() => rejectUser(user._id)}
                                                                    className="btn btn-outline-secondary btn-sm mx-2">Reject</a>
 
                                                             </td>

@@ -10,7 +10,8 @@ import { useNavigate } from "react-router-dom";
 import { getAllTypeEmplois } from "../Services/typeEmploisService";
 import { getAllNiveauEtudes } from "../Services/niveauEtudeService";
 import { getAllTypeExperiences } from "../Services/typeExperienceService";
-
+import {getAllDomaines} from "../Services/domaineService";
+import {Button, Modal} from "react-bootstrap";
 const AddJob = () => {
     const [titre, setTitre] = useState('');
     const [nbPoste, setNbPoste] = useState('');
@@ -20,6 +21,7 @@ const AddJob = () => {
     const [dateExpiration, setDateExpiration] = useState('');
     const [description, setDescription] = useState('');
     const [exigences, setExigences] = useState('');
+    const [idDomaine, setDomaine] = useState('');
     const [userId, setUserId] = useState(null);
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
@@ -29,6 +31,9 @@ const AddJob = () => {
     const [etudes, setEtudes] = useState([]);
     const [typeExperience, setTypeExperience] = useState(null);
     const [experiences, setExperiences] = useState([]);
+    const [domaines, setDomaines] = useState([]);
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [offreId, setOffreId] = useState(null);
 
     const fetchUser = async () => {
         const token = localStorage.getItem("token");
@@ -56,6 +61,12 @@ const AddJob = () => {
                     label: experience.titre
                 }));
                 setExperiences(formattedExperiences);
+                const domaineData = await getAllDomaines();
+                const formattedDomaines = domaineData.map(domaine => ({
+                    value: domaine._id,
+                    label: domaine.titre
+                }));
+                setDomaines(formattedDomaines);
             } catch (error) {
                 console.error('Error fetching user:', error);
             }
@@ -95,6 +106,9 @@ const AddJob = () => {
         if (!exigences) {
             errors.exigences = 'Veuillez entrer des exigences.';
         }
+        if (!idDomaine) {
+            errors.idDomaine = 'Veuillez entrer un domaine.';
+        }
         setErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -123,6 +137,7 @@ const AddJob = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validate()) return;
+
         try {
             const dateCreation = new Date();
             const offreData = {
@@ -136,25 +151,25 @@ const AddJob = () => {
                 dateExpiration,
                 description,
                 exigences,
-                dateCreation
+                dateCreation,
+                idDomaine
             };
 
-            await addOffre(userId, offreData);
-            setTitre('');
-            setNbPoste('');
-            setTypeEmploi(null);
-            setExperience('');
-            setRemuneration('');
-            setLangue('');
-            setNiveauEtude(null);
-            setTypeExperience(null);
-            setDateExpiration('');
-            setDescription('');
-            setExigences('');
-            navigate("/offres");
+            const response = await addOffre(userId, offreData);
+
+            if (response.status === 201) {
+                const { offreId } = response.data;
+                setOffreId(offreId); // Stocke l'id de l'offre dans l'état local
+                setShowConfirmationModal(true);// Affiche le modal après le succès
+
+            }
         } catch (error) {
             console.error('Error adding offer:', error);
         }
+    };
+
+    const handleCloseConfirmationModal = () => {
+        setShowConfirmationModal(false);
     };
 
     return (
@@ -216,6 +231,20 @@ const AddJob = () => {
                                                     <div className="invalid-feedback">{errors.nbPoste}</div>}
                                             </div>
                                             <div className="mb-3 col-md-6">
+                                                <label className="form-label" htmlFor="domaine">Domaine</label>
+                                                <Select
+                                                    name="domaine"
+                                                    options={domaines}
+                                                    isSearchable
+                                                    value={domaines.find(option => option.value === idDomaine)}
+                                                    onChange={handleSelectChange(setDomaine, 'idDomaine')}
+                                                    placeholder="Sélectionner un domaine"
+                                                    className={errors.idDomaine ? 'is-invalid' : ''}
+                                                />
+                                                {errors.idDomaine &&
+                                                    <div className="invalid-feedback">{errors.idDomaine}</div>}
+                                            </div>
+                                            <div className="mb-3 col-md-6">
                                                 <label className="form-label" htmlFor="typeEmploi">Type d'emploi</label>
                                                 <Select
                                                     name="typeEmploi"
@@ -260,7 +289,7 @@ const AddJob = () => {
                                             </div>
                                             <div className="mb-3 col-md-6">
                                                 <label className="form-label"
-                                                       htmlFor="remuneration">Rémunération</label>
+                                                       htmlFor="remuneration">Fourchette salariale</label>
                                                 <input
                                                     type="text"
                                                     name="remuneration"
@@ -340,13 +369,31 @@ const AddJob = () => {
                                     </div>
                                 </div>
                                 <div className="d-flex justify-content-end">
-                                    <a href="#" className="btn btn-outline-primary me-2">Annuler</a>
+                                    <a href="" className="btn btn-outline-primary me-2">Annuler</a>
                                     <button className="btn btn-primary" type="submit">Enregistrer</button>
                                 </div>
                             </form>
                         </div>
                     </div>
+                    <Modal show={showConfirmationModal} onHide={handleCloseConfirmationModal}>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Confirmation</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            Que voulez-vous faire ensuite ?
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={() => navigate('/offres')}>
+                                Voir toutes les offres
+                            </Button>
+                            <Button variant="primary" onClick={() => navigate(`/process/${offreId}`)}>
+                                Créer un processus
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+
                 </section>
+
             </main>
         </div>
     );

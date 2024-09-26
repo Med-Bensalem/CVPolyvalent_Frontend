@@ -25,6 +25,9 @@ import ListNiveauEtudes from './Admin/List-niveau-etudes';
 import ListTypeExperience from './Admin/List-type-experiences';
 import EditJob from './Admin/edit-job';
 import Protected from "./protected";
+import Process from "./Admin/Process";
+import ListTests from "./Admin/List-test";
+import ListDomaines from "./Admin/List-domaines";
 
 function App() {
   return (
@@ -42,11 +45,15 @@ function App() {
             <Route path="/Add-Job" element={<AddJob />} />
             <Route path="/edit-job/:id" element={<EditJob />} />
             <Route path="/offres" element={<Offres />} />
+            <Route path="/tests" element={<ListTests />} />
+
             <Route path="/Entreprise-Suivie/:id" element={<SuivieEntreprise />} />
+            <Route path="/Process/:offreId" element={<Process />} />
             <Route path="/about/:id" element={<About />} />
             <Route path="/comptes" element={<ListComptes />} />
             <Route path="/contacts" element={<ListContacts />} />
             <Route path="/secteurs" element={<ListSecteurs />} />
+            <Route path="/domaines" element={<ListDomaines />} />
             <Route path="/type-emplois" element={<ListTypeEmplois />} />
             <Route path="/type-experiences" element={<ListTypeExperience />} />
             <Route path="/niveau-etudes" element={<ListNiveauEtudes />} />
@@ -55,7 +62,6 @@ function App() {
 
             <Route path="/visualiser" element={<ViewCV />} />
             <Route path="/cv" element={<MonCV />} />
-
 
 
             <Route path="/dashboard" element={<Dashboard />} />

@@ -137,8 +137,9 @@ const SingleJob = () => {
 
         try {
             const CurrentDate = moment().format('YYYY-MM-DD');
+            const score = Math.floor(Math.random() * 100);
 
-            await createPostule(cvFile, lettreMotivationFile, userId, id, description,CurrentDate);
+            await createPostule(cvFile, lettreMotivationFile, userId, id, description,CurrentDate,score);
             setSuccessMessage('Candidature créée avec succès !');
             setError('');
             document.getElementById('applyModal').classList.remove('show');

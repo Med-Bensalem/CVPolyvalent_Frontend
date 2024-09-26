@@ -1,22 +1,23 @@
+import React, {useEffect, useState} from 'react';
 import Sidebar from "../layouts/Sidebar";
 import Header from "../layouts/Header";
-import React, {useEffect, useState} from "react";
-import {addTypeEmploi, deleteTypeEmploi, getAllTypeEmplois, updateTypeEmploi} from "../Services/typeEmploisService";
 import ReactPaginate from "react-paginate";
-import '../Template.css'; //
+import '../Template.css';
+import {addDomaine, deleteDomaine, getAllDomaines, updateDomaine} from "../Services/domaineService";
 
 const itemsPerPage = 5;
-const ListTypeEmplois = () => {
-    const [typesEmplois, setTypeEmplois] = useState([]);
+const ListDomaines = () => {
+
+    const [domaines, setDomaines] = useState([]);
     const [titre, setTitre] = useState('');
     const [error, setError] = useState('');
-    const [typeEmploisToDelete, setTypeEmploisToDelete] = useState(null);
-    const [selectedTypeEmplois, setSelectedTypeEmplois] = useState(null);
-    const [currentItems, setCurrentItems] = useState([]);
+    const [domaineToDelete, setDomaineToDelete] = useState(null);
+    const [selectedDomaine, setSelectedDomaine] = useState(null);
     const [pageCount, setPageCount] = useState(0);
     const [itemOffset, setItemOffset] = useState(0);
+    const [currentItems, setCurrentItems] = useState([]);
 
-    const [typeEmploisDetails, setTypeEmploisDetails] = useState({
+    const [domaineDetails, setDomaineDetails] = useState({
         titre: '',
     });
 
@@ -31,51 +32,61 @@ const ListTypeEmplois = () => {
         return Object.keys(errors).length === 0;
     };
 
+    const handlePageClick = (event) => {
+        const newOffset = (event.selected * itemsPerPage) % domaines.length;
+        setItemOffset(newOffset);
+    };
+    useEffect(() => {
+        const endOffset = itemOffset + itemsPerPage;
+        setCurrentItems(domaines.slice(itemOffset, endOffset));
+        setPageCount(Math.ceil(domaines.length / itemsPerPage));
+    }, [itemOffset, domaines]);
 
 
-    const fetchTypesEmplois = async () => {
+
+    const fetchSecteurs = async () => {
         try {
-            const data = await getAllTypeEmplois();
-            setTypeEmplois(data);
+            const data = await getAllDomaines();
+            setDomaines(data);
         } catch (error) {
             console.error(error);
         }
     };
 
     useEffect(() => {
-        fetchTypesEmplois();
+        fetchSecteurs();
     }, []);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validate()) return;
         try {
-            const typeEmploiData = {
+            const domaineData = {
                 titre,
 
             };
 
             // Appel de la fonction addExperienceToUser avec les données de l'expérience
-            await addTypeEmploi(typeEmploiData);
+            await addDomaine(domaineData);
             // Réinitialisation des champs du formulaire après soumission réussie
             setTitre('');
-
-            document.getElementById('AddTypeEmploi').classList.remove('show');
+            document.getElementById('AddDomaine').classList.remove('show');
             document.body.classList.remove('modal-open');
             const modalBackdrop = document.querySelector('.modal-backdrop');
             modalBackdrop.parentNode.removeChild(modalBackdrop);
-            fetchTypesEmplois();
+            fetchSecteurs();
 
         } catch (error) {
             setError(error.message);
         }
     };
-    const handleDelete = async (typeEmploiId) => {
+    const handleDelete = async (domaineId) => {
         try {
-            await deleteTypeEmploi(typeEmploiId);
-            setTypeEmplois(prevTypesEmplois => prevTypesEmplois.filter(typeEmploi => typeEmploi._id !== typeEmploiId));
-            setTypeEmploisToDelete(null); // Réinitialiser formation à supprimer
-            document.getElementById('TypeEmploiDelete').classList.remove('show');
+            await deleteDomaine(domaineId);
+            setDomaines(prevDomaines => prevDomaines.filter(domaine => domaine._id !== domaineId));
+            setDomaineToDelete(null); // Réinitialiser formation à supprimer
+            document.getElementById('SecteurDelete').classList.remove('show');
             document.body.classList.remove('modal-open');
             const modalBackdrop = document.querySelector('.modal-backdrop');
             modalBackdrop.parentNode.removeChild(modalBackdrop);
@@ -84,46 +95,35 @@ const ListTypeEmplois = () => {
         }
     };
 
-    const handleSetSecteurToDelete = (typeEmploiId) => {
-        setTypeEmploisToDelete(typeEmploiId);
+    const handleSetDomaineToDelete = (domaineId) => {
+        setDomaineToDelete(domaineId);
     };
 
-    useEffect(() => {
-        const endOffset = itemOffset + itemsPerPage;
-        setCurrentItems(typesEmplois.slice(itemOffset, endOffset));
-        setPageCount(Math.ceil(typesEmplois.length / itemsPerPage));
-    }, [itemOffset, typesEmplois]);
-
-    const handlePageClick = (event) => {
-        const newOffset = (event.selected * itemsPerPage) % typesEmplois.length;
-        setItemOffset(newOffset);
-    };
-
-    const handleEdit = (secteur) => {
-        setSelectedTypeEmplois(secteur);
-        setTypeEmploisDetails({
-            titre: secteur.titre,
+    const handleEdit = (domaine) => {
+        setSelectedDomaine(domaine);
+        setDomaineDetails({
+            titre: domaine.titre,
         });
     };
 
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            await updateTypeEmploi(selectedTypeEmplois._id, typeEmploisDetails);
+            await updateDomaine(selectedDomaine._id, domaineDetails);
             // Mettre à jour la liste des formations avec les détails modifiés
-            setTypeEmplois(prevTypesEmploi => {
-                const updatedTypeEmplois = prevTypesEmploi.map(typeEmplois => {
-                    if (typeEmplois._id === selectedTypeEmplois._id) {
+            setDomaines(prevDomaines => {
+                const updatedDomaines = prevDomaines.map(domaine => {
+                    if (domaine._id === selectedDomaine._id) {
                         return {
-                            ...typeEmplois,
-                            ...typeEmploisDetails
+                            ...domaine,
+                            ...domaineDetails
                         };
                     }
-                    return typeEmplois;
+                    return domaine;
                 });
-                return updatedTypeEmplois;
+                return updatedDomaines;
             });
-            document.getElementById('ModifierModalTypeEmploi').classList.remove('show');
+            document.getElementById('ModifierModal').classList.remove('show');
             document.body.classList.remove('modal-open');
             const modalBackdrop = document.querySelector('.modal-backdrop');
             modalBackdrop.parentNode.removeChild(modalBackdrop);
@@ -166,16 +166,16 @@ const ListTypeEmplois = () => {
                             <div
                                 className="border-bottom pb-3 mb-3 d-md-flex align-items-center justify-content-between">
                                 <div className="mb-2 mb-lg-0">
-                                    <h1 className="mb-0 h2 fw-bold">Liste Type Emplois </h1>
+                                    <h1 className="mb-0 h2 fw-bold">Liste Domaines</h1>
                                     <nav aria-label="breadcrumb">
                                         <ol className="breadcrumb">
                                             <li className="breadcrumb-item">
                                                 <a href="/dashboard">Dashboard</a>
                                             </li>
                                             <li className="breadcrumb-item">
-                                                Gestion Type Emplois
+                                                Gestion Domaines
                                             </li>
-                                            <li className="breadcrumb-item active" aria-current="page">Liste Type Emplois
+                                            <li className="breadcrumb-item active" aria-current="page">Liste Domaines
 
                                             </li>
                                         </ol>
@@ -183,57 +183,21 @@ const ListTypeEmplois = () => {
                                 </div>
                                 <div>
                                     <a  className="btn btn-primary me-2" data-bs-toggle="modal"
-                                       data-bs-target="#AddTypeEmploi">Ajouter Type </a>
+                                       data-bs-target="#AddDomaine">Ajouter Domaine</a>
                                 </div>
-                                <div className="modal fade" id="AddTypeEmploi" tabIndex="-1" role="dialog"
-                                     aria-labelledby="experienceLabel" aria-hidden="true">
-                                    <div className="modal-dialog modal-dialog-centered modal-lg">
-                                        <div className="modal-content">
-                                            <div className="modal-header">
-                                                <h4 className="modal-title mb-0" id="newCatgoryLabel">Ajouter Type Emploi</h4>
-                                                <button type="button" className="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
-                                            </div>
-                                            <div className="modal-body">
-                                                <form className="needs-validation" noValidate onSubmit={handleSubmit}>
-                                                    <div className="mb-3 mb-2">
-                                                        <label className="form-label" htmlFor="title">
-                                                            Titre
-                                                            <span className="text-danger">*</span>
-                                                        </label>
-                                                        <input type="text" name="titre" value={titre}
-                                                               onChange={handleChange}
-                                                               className={`form-control ${error.titre ? 'is-invalid' : ''}`}
-                                                               placeholder="Titre"/>
 
-                                                        {error.titre && <div className="invalid-feedback">{error.titre}</div>}
-                                                    </div>
-
-                                                    <div>
-                                                        <button type="submit"
-                                                                className="btn btn-primary mx-2">Enregistrer
-                                                        </button>
-                                                        <button type="button" className="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Fermer
-                                                        </button>
-                                                    </div>
-
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
                     {currentItems.length === 0 ? (
                         <div className="col-12 mb-2">
                             <div className="alert alert-info alert-dismissible fade show" role="alert">
-                                Désolé, aucune type emplois etudes disponible pour le moment. Revenez bientôt !
+                                Désolé, aucune secteurs disponible pour le moment. Revenez bientôt !
                             </div>
                         </div>
                     ) : (
                         <>
+
 
                     <div className="row">
                         <div className="col-12">
@@ -250,11 +214,11 @@ const ListTypeEmplois = () => {
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        {currentItems.map((typeEmploi, index) => (
-                                            <tr key={typeEmploi._id}>
+                                        {currentItems.map((domaine, index) => (
+                                            <tr key={domaine._id}>
                                                 <td>
 
-                                                    {typeEmploi.titre}
+                                                    {domaine.titre}
 
                                                 </td>
 
@@ -276,16 +240,16 @@ const ListTypeEmplois = () => {
 
 
                                                             <a className="dropdown-item "
-                                                               onClick={() => handleEdit(typeEmploi)}>
+                                                               onClick={() => handleEdit(domaine)}>
                                                                 <i className="fe fe-edit-2 fs-6 mx-2"></i>
                                                                 <span data-bs-toggle="modal"
-                                                                      data-bs-target="#ModifierModalTypeEmploi">Modifier</span>
+                                                                      data-bs-target="#ModifierModal">Modifier</span>
                                                             </a>
                                                             <a className="dropdown-item " title="Delete"
-                                                               onClick={() => handleSetSecteurToDelete(typeEmploi._id)}>
+                                                               onClick={() => handleSetDomaineToDelete(domaine._id)}>
                                                                 <i className="fe fe-trash-2 fs-6 mx-2"></i>
                                                                 <span data-bs-toggle="modal"
-                                                                      data-bs-target="#TypeEmploiDelete">Supprimer</span>
+                                                                      data-bs-target="#SecteurDelete">Supprimer</span>
                                                             </a>
                                                         </div>
                                                     </div>
@@ -311,12 +275,14 @@ const ListTypeEmplois = () => {
                                 activeClassName="active"
 
                             />
+
                         </>
                     )}
 
 
+
                     {/* Modal de confirmation de suppression */}
-                    <div className="modal fade" id="TypeEmploiDelete">
+                    <div className="modal fade" id="SecteurDelete">
                         <div className="modal-dialog" role="document">
                             <div className="modal-content">
                                 <div className="modal-header">
@@ -325,13 +291,13 @@ const ListTypeEmplois = () => {
                                             aria-label="Close"></button>
                                 </div>
                                 <div className="modal-body">
-                                    Êtes-vous sûr de vouloir supprimer cette Type  ?
+                                    Êtes-vous sûr de vouloir supprimer cette Domaine ?
                                 </div>
                                 <div className="modal-footer">
                                     <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Annuler
                                     </button>
                                     <button type="button" className="btn btn-danger"
-                                            onClick={() => handleDelete(typeEmploisToDelete)}>Supprimer
+                                            onClick={() => handleDelete(domaineToDelete)}>Supprimer
                                     </button>
                                 </div>
                             </div>
@@ -339,12 +305,12 @@ const ListTypeEmplois = () => {
                     </div>
 
                     {/* Modal de modification */}
-                    <div className="modal fade" id="ModifierModalTypeEmploi" tabIndex="-1" role="dialog"
+                    <div className="modal fade" id="ModifierModal" tabIndex="-1" role="dialog"
                          aria-labelledby="experienceLabel" aria-hidden="true">
                         <div className="modal-dialog modal-dialog-centered modal-lg">
                             <div className="modal-content">
                                 <div className="modal-header">
-                                    <h4 className="modal-title mb-0" id="newCatgoryLabel">Modifier une Type Emploi</h4>
+                                    <h4 className="modal-title mb-0" id="newCatgoryLabel">Modifier un domaine</h4>
                                     <button type="button" className="btn-close" data-bs-dismiss="modal"
                                             aria-label="Close"></button>
                                 </div>
@@ -355,9 +321,9 @@ const ListTypeEmplois = () => {
                                                 Titre
                                                 <span className="text-danger">*</span>
                                             </label>
-                                            <input type="text" name="titre" value={typeEmploisDetails.titre}
-                                                   onChange={(e) => setTypeEmploisDetails({
-                                                       ...typeEmploisDetails,
+                                            <input type="text" name="titre" value={domaineDetails.titre}
+                                                   onChange={(e) => setDomaineDetails({
+                                                       ...domaineDetails,
                                                        titre: e.target.value
                                                    })} className="form-control"
                                                    placeholder="Titre"/>
@@ -378,10 +344,49 @@ const ListTypeEmplois = () => {
                             </div>
                         </div>
                     </div>
+
+                    <div className="modal fade" id="AddDomaine" tabIndex="-1" role="dialog"
+                         aria-labelledby="experienceLabel" aria-hidden="true">
+                        <div className="modal-dialog modal-dialog-centered modal-lg">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h4 className="modal-title mb-0" id="newCatgoryLabel">Ajouter un domaine </h4>
+                                    <button type="button" className="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div className="modal-body">
+                                    <form className="needs-validation" noValidate onSubmit={handleSubmit}>
+                                        <div className="mb-3 mb-2">
+                                            <label className="form-label" htmlFor="title">
+                                                Titre
+                                                <span className="text-danger">*</span>
+                                            </label>
+                                            <input type="text" name="titre" value={titre}
+                                                   onChange={handleChange}
+                                                   className={`form-control ${error.titre ? 'is-invalid' : ''}`}
+                                                   placeholder="Titre"/>
+
+                                            {error.titre && <div className="invalid-feedback">{error.titre}</div>}
+                                        </div>
+
+                                        <div>
+                                            <button type="submit"
+                                                    className="btn btn-primary mx-2">Enregistrer
+                                            </button>
+                                            <button type="button" className="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Fermer
+                                            </button>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </main>
         </div>
     );
 };
 
-export default ListTypeEmplois;
+export default ListDomaines;

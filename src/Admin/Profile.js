@@ -4,10 +4,7 @@ import Sidebar from "../layouts/Sidebar";
 import Header from "../layouts/Header";
 import {jwtDecode} from "jwt-decode";
 import {completeProfile, getUserById, uploadImage} from "../Services/authService";
-import moment from "moment";
-import SuccessAlert from "../Alert/SuccessAlert";
 import ContenuProfile from "./contenu-profile";
-
 
 
 const baseURL = 'http://localhost:5000';

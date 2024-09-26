@@ -5,7 +5,7 @@ const API_URL = 'http://localhost:5000/api/offres';
 const addOffre = async (userId, offreData) => {
     try {
         const response = await axios.post(`${API_URL}/users/${userId}/offres`, offreData);
-        return response.data;
+        return response;
     } catch (error) {
         console.error(error);
         throw new Error('Error adding offre ');

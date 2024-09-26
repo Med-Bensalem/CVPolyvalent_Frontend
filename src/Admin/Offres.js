@@ -1,11 +1,14 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from "../layouts/Sidebar";
 import Header from "../layouts/Header";
-import {jwtDecode} from "jwt-decode";
-import {deleteOffre, getOffresByUser} from "../Services/offreService";
-import {useNavigate} from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import { deleteOffre, getOffresByUser } from "../Services/offreService";
+import { getWorkflowByOffreId } from "../Services/workflowService"; // Importe les fonctions API appropriées
+import { useNavigate } from "react-router-dom";
 import ReactPaginate from 'react-paginate';
-import '../Template.css'; // Assurez-vous d'ajouter du style pour la pagination si nécessaire
+import '../Template.css';
+import moment from "moment";
+import {getStepsByWorkflowId} from "../Services/stepService";
 
 const itemsPerPage = 5;
 
@@ -16,11 +19,17 @@ const Offres = () => {
     const [itemOffset, setItemOffset] = useState(0);
     const [userId, setUserId] = useState(null);
     const [offreToDelete, setOffreToDelete] = useState(null);
+    const [disabledButtons, setDisabledButtons] = useState({}); // Stocker l'état des boutons désactivés pour chaque offre
     const navigate = useNavigate();
 
-    const handleClick = (id) => {
+    const handleClickCandidat = (id) => {
         navigate(`/Entreprise-Suivie/${id}`);
     };
+
+    const handleClickProcess = async (id) => {
+        navigate(`/Process/${id}`);
+    };
+
     const handleEdit = (id) => {
         navigate(`/edit-job/${id}`);
     };
@@ -34,7 +43,7 @@ const Offres = () => {
                 const fetchedOffres = await getOffresByUser(user.userId);
                 setOffres(fetchedOffres);
             } catch (error) {
-                console.error('Error fetching experiences:', error);
+                console.error('Error fetching offres:', error);
             }
         }
     };
@@ -42,6 +51,30 @@ const Offres = () => {
     useEffect(() => {
         fetchOffres();
     }, []);
+
+    const checkWorkflowAndSteps = async (offreId) => {
+        try {
+            const workflow = await getWorkflowByOffreId(offreId);
+            if (workflow) {
+                const steps = await getStepsByWorkflowId(workflow._id);
+                return steps && steps.length > 2;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error checking workflow and steps:', error);
+            return false;
+        }
+    };
+
+    useEffect(() => {
+        offres.forEach(async (offre) => {
+            const hasSteps = await checkWorkflowAndSteps(offre._id);
+            setDisabledButtons((prev) => ({
+                ...prev,
+                [offre._id]: !hasSteps, // Désactiver les boutons si aucune étape n'est trouvée
+            }));
+        });
+    }, [offres]);
 
     useEffect(() => {
         const endOffset = itemOffset + itemsPerPage;
@@ -77,12 +110,13 @@ const Offres = () => {
             <Sidebar />
             <main id="page-content">
                 <div className="header">
-                    <Header />
+                    <Header/>
                 </div>
                 <section className="container-fluid p-4">
                     <div className="row">
                         <div className="col-lg-12 col-md-12 col-12">
-                            <div className="border-bottom pb-3 mb-3 d-md-flex align-items-center justify-content-between">
+                            <div
+                                className="border-bottom pb-3 mb-3 d-md-flex align-items-center justify-content-between">
                                 <div className="mb-2 mb-lg-0">
                                     <h1 className="mb-0 h2 fw-bold">Liste Offres</h1>
                                     <nav aria-label="breadcrumb">
@@ -90,7 +124,8 @@ const Offres = () => {
                                             <li className="breadcrumb-item">
                                                 <a href="/dashboard">Dashboard</a>
                                             </li>
-                                            <li className="breadcrumb-item active" aria-current="page">Gestion offres</li>
+                                            <li className="breadcrumb-item active" aria-current="page">Gestion offres
+                                            </li>
                                             <li className="breadcrumb-item active" aria-current="page">Liste offres</li>
                                         </ol>
                                     </nav>
@@ -109,7 +144,6 @@ const Offres = () => {
                         </div>
                     ) : (
                         <div>
-
                             <div className="row">
                                 <div className="col-12">
                                     <div className="card">
@@ -118,10 +152,11 @@ const Offres = () => {
                                                 <thead>
                                                 <tr>
                                                     <th>Titre Offre</th>
-                                                    <th>Nombre de Poste</th>
-
+                                                    <th>Date Création</th>
                                                     <th>Status</th>
                                                     <th></th>
+                                                    <th></th>
+                                                    <th>Actions</th>
                                                 </tr>
                                                 </thead>
                                                 <tbody>
@@ -130,13 +165,13 @@ const Offres = () => {
                                                         <td>
                                                             <div className="d-flex align-items-center">
                                                                 <div className="ms-3">
-                                                                    <div className="text-inherit" onClick={() => handleClick(offre._id)}>
+                                                                    <div className="text-inherit">
                                                                         <h3 className="mb-1 fs-4">{offre.titre}</h3>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td>{offre.nbPoste}</td>
+                                                        <td>{moment(offre.dateCreation).format('DD/MM/YYYY')}</td>
 
                                                         <td>
                                                             {new Date(offre.dateExpiration) < new Date() ? (
@@ -145,6 +180,55 @@ const Offres = () => {
                                                                 <span className="badge bg-info-soft">En cours</span>
                                                             )}
                                                         </td>
+                                                        {disabledButtons[offre._id] ? (
+                                                            // Si le workflow n'existe pas ou n'a pas d'étapes
+                                                            <>
+                                                                <td>
+                                                                    <div>
+                                                                        <button
+                                                                            className="btn btn-secondary me-2"
+                                                                            disabled
+                                                                        >
+                                                                            Gestion candidatures
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div>
+                                                                        <button
+                                                                            onClick={() => handleClickProcess(offre._id)} // Fonction pour ajouter un processus
+                                                                            className="btn btn-primary me-2"
+                                                                        >
+                                                                            Ajouter Process
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </>
+                                                        ) : (
+                                                            // Si le workflow et les étapes existent
+                                                            <>
+                                                                <td>
+                                                                    <div>
+                                                                        <button
+                                                                            onClick={() => handleClickCandidat(offre._id)}
+                                                                            className="btn btn-primary me-2"
+                                                                        >
+                                                                            Gestion candidatures
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div>
+                                                                        <button
+                                                                            onClick={() => handleClickProcess(offre._id)}
+                                                                            className="btn btn-primary me-2"
+                                                                        >
+                                                                            Modifier Process
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </>
+                                                        )}
                                                         <td>
                                                             <div className="dropdown dropstart">
                                                                 <a className="btn-icon btn btn-ghost btn-sm rounded-circle"
@@ -169,7 +253,6 @@ const Offres = () => {
                                                                         Supprimer
                                                                     </a>
                                                                 </div>
-
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -189,8 +272,13 @@ const Offres = () => {
                                 previousLabel="< précédent"
                                 renderOnZeroPageCount={null}
                                 containerClassName="pagination"
+                                pageClassName="page-item"
+                                pageLinkClassName="page-link"
+                                previousClassName="page-item"
+                                previousLinkClassName="page-link"
+                                nextClassName="page-item"
+                                nextLinkClassName="page-link"
                                 activeClassName="active"
-
                             />
                         </div>
                     )}
@@ -200,14 +288,18 @@ const Offres = () => {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title">Confirmation de suppression</h5>
-                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" className="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
                             </div>
                             <div className="modal-body">
                                 Êtes-vous sûr de vouloir supprimer cette Offre ?
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                <button type="button" className="btn btn-danger" onClick={() => handleDelete(offreToDelete)}>Supprimer</button>
+                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Annuler
+                                </button>
+                                <button type="button" className="btn btn-danger"
+                                        onClick={() => handleDelete(offreToDelete)}>Supprimer
+                                </button>
                             </div>
                         </div>
                     </div>

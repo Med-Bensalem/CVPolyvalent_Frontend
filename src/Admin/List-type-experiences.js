@@ -187,7 +187,7 @@ const ListTypeExperience = () => {
                                     </nav>
                                 </div>
                                 <div>
-                                    <a  className="btn btn-primary me-2" data-bs-toggle="modal"
+                                    <a className="btn btn-primary me-2" data-bs-toggle="modal"
                                        data-bs-target="#AddTypeExperience">Ajouter Type Experience</a>
                                 </div>
                                 <div className="modal fade" id="AddTypeExperience" tabIndex="-1" role="dialog"
